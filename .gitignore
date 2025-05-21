@@ -1,0 +1,47 @@
+# Rust build artifacts
+/target/
+
+# Application data
+/data/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*~
+.DS_Store
+
+# Backup files
+*.rs.bk
+*.bak
+
+# Debug files
+*.pdb
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Dependency directories
+debug/
+release/
+
+# Rust-specific
+**/*.rs.fmt
+
+# Log files
+*.log
+logs/
+
+# Generated documentation
+/doc/
+
+# Local development files
+agent.md
+
+/docs
+/website
+# Temporary files
+*.tmp
