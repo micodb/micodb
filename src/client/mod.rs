@@ -20,7 +20,10 @@ use std::sync::Arc;
 use std::time::Duration;
 
 pub use error::{ClientError, Result};
-pub use connection::{Connection, ConnectionOptions};
+pub use connection::{
+    Connection, ConnectionOptions, AuthCredentials, 
+    ResponseFormat, StreamingResponse
+};
 pub use query_builder::{QueryBuilder, SelectBuilder, FilterCondition};
 pub use transaction::Transaction;
 pub use types::{Value, Row, Table, QueryResult};
@@ -65,6 +68,19 @@ impl Client {
         let pool = create_pool_with_options(address, options)?;
         Ok(Self { pool })
     }
+    
+    /// Set authentication credentials for all connections in the pool.
+    pub async fn set_auth_credentials(&self, auth: AuthCredentials) -> Result<()> {
+        let conn = self.pool.get().await?;
+        conn.set_auth_credentials(auth);
+        Ok(())
+    }
+    
+    /// Authenticate with the server.
+    pub async fn login(&self, auth: AuthCredentials, db_name: &str) -> Result<()> {
+        let mut conn = self.pool.get().await?;
+        conn.login(auth, db_name).await
+    }
 
     /// Create a new database.
     pub async fn create_database(&self, name: &str) -> Result<()> {
@@ -86,14 +102,36 @@ impl Client {
 
     /// Read all data from a table.
     pub async fn read_table(&self, db_name: &str, table_name: &str) -> Result<Vec<RecordBatch>> {
-        let conn = self.pool.get().await?;
+        let mut conn = self.pool.get().await?;
         conn.read_table(db_name, table_name).await
+    }
+    
+    /// Read table data as a streaming response.
+    pub async fn read_table_stream(
+        &self, 
+        db_name: &str, 
+        table_name: &str, 
+        batch_size: Option<usize>
+    ) -> Result<StreamingResponse> {
+        let mut conn = self.pool.get().await?;
+        conn.read_table_stream(db_name, table_name, batch_size).await
     }
 
     /// Execute a SQL query.
     pub async fn execute_sql(&self, db_name: &str, query: &str) -> Result<Vec<RecordBatch>> {
-        let conn = self.pool.get().await?;
+        let mut conn = self.pool.get().await?;
         conn.execute_sql(db_name, query).await
+    }
+    
+    /// Execute a SQL query as a streaming response.
+    pub async fn execute_sql_stream(
+        &self,
+        db_name: &str,
+        query: &str,
+        batch_size: Option<usize>
+    ) -> Result<StreamingResponse> {
+        let mut conn = self.pool.get().await?;
+        conn.execute_sql_stream(db_name, query, batch_size).await
     }
 
     /// Drop a table.

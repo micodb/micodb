@@ -1,0 +1,31 @@
+{
+  "node_type": "Worker",
+  "network": {
+    "bind_addr": "127.0.0.1",
+    "client_port": 3458,
+    "cluster_port": 3459,
+    "external_hostname": null,
+    "max_connections": 500,
+    "max_internal_connections": 50
+  },
+  "discovery": {
+    "type": "Static",
+    "config": {
+      "nodes": [
+        "127.0.0.1:3457"
+      ]
+    }
+  },
+  "partition_strategy": {
+    "type": "Hash",
+    "config": {
+      "partitions": 16,
+      "replicas": 1
+    }
+  },
+  "metadata_path": "./data/_metadata",
+  "data_path": "./data",
+  "max_memory": 4294967296,
+  "max_disk_space": 53687091200,
+  "max_cpus": 2
+}

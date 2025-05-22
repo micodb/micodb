@@ -93,12 +93,34 @@ enum Request {
     #[serde(rename = "create_database")]
     CreateDatabase {
         db_name: String,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "create_table")]
     CreateTable {
         db_name: String,
         table_name: String,
         schema: Vec<FieldDefJson>,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "append")]
     Append {
@@ -106,37 +128,153 @@ enum Request {
         table_name: String,
         rows: Vec<serde_json::Value>,
         tx_id: Option<u64>,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "read")]
     Read {
         db_name: String,
         table_name: String,
+        #[serde(default)]
+        format: ResponseFormat,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        batch_size: Option<usize>,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "sql")]
     ExecuteSql {
         db_name: String,
         query: String,
+        #[serde(default)]
+        format: ResponseFormat,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        batch_size: Option<usize>,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "drop_table")]
     DropTable {
         db_name: String,
         table_name: String,
         tx_id: Option<u64>,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "begin_transaction")]
     BeginTransaction {
         db_name: String,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "commit_transaction")]
     CommitTransaction {
         db_name: String,
         tx_id: u64,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
     #[serde(rename = "rollback_transaction")]
     RollbackTransaction {
         db_name: String,
         tx_id: u64,
+        // Authentication
+        #[serde(skip_serializing_if = "Option::is_none")]
+        auth_method: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
     },
+    #[serde(rename = "login")]
+    Login {
+        db_name: String,
+        auth_method: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        username: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        password: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        token: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        api_key: Option<String>,
+    },
+}
+
+/// Response format for requests.
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum ResponseFormat {
+    /// Standard JSON response (default)
+    Json,
+    /// Newline-delimited JSON for streaming
+    Ndjson,
+    /// Arrow Flight protocol (binary)
+    ArrowFlight,
+}
+
+impl Default for ResponseFormat {
+    fn default() -> Self {
+        ResponseFormat::Json
+    }
 }
 
 /// Response from the server.
@@ -144,6 +282,8 @@ enum Request {
 struct Response {
     status: String,
     data: Option<serde_json::Value>,
+    auth_token: Option<String>,
+    token_expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 /// Field definition for JSON schema.
@@ -153,6 +293,107 @@ struct FieldDefJson {
     #[serde(rename = "type")]
     data_type: String,
     nullable: bool,
+}
+
+/// Authentication credentials for a connection
+#[derive(Debug, Clone)]
+pub struct AuthCredentials {
+    /// Authentication method
+    pub auth_method: Option<String>,
+    /// Username for password authentication
+    pub username: Option<String>,
+    /// Password for password authentication
+    pub password: Option<String>,
+    /// JWT token for token authentication
+    pub token: Option<String>,
+    /// API key for API key authentication
+    pub api_key: Option<String>,
+}
+
+impl Default for AuthCredentials {
+    fn default() -> Self {
+        Self {
+            auth_method: None,
+            username: None,
+            password: None,
+            token: None,
+            api_key: None,
+        }
+    }
+}
+
+/// Streaming response handler
+pub struct StreamingResponse {
+    /// Reader for the stream
+    reader: BufReader<tokio::net::tcp::OwnedReadHalf>,
+    /// Response format
+    format: ResponseFormat,
+    /// End of stream flag
+    is_done: bool,
+    /// Authentication token from initial response
+    auth_token: Option<String>,
+    /// Token expiration time
+    token_expires_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl StreamingResponse {
+    /// Check if the stream is done
+    pub fn is_done(&self) -> bool {
+        self.is_done
+    }
+    
+    /// Get the authentication token
+    pub fn auth_token(&self) -> Option<&str> {
+        self.auth_token.as_deref()
+    }
+    
+    /// Get the token expiration time
+    pub fn token_expires_at(&self) -> Option<&chrono::DateTime<chrono::Utc>> {
+        self.token_expires_at.as_ref()
+    }
+    
+    /// Read the next row from the stream
+    pub async fn next_row(&mut self) -> Result<Option<serde_json::Value>> {
+        if self.is_done {
+            return Ok(None);
+        }
+        
+        let mut line = String::new();
+        match self.reader.read_line(&mut line).await {
+            Ok(0) => {
+                self.is_done = true;
+                return Ok(None);
+            },
+            Ok(_) => {
+                if line.trim().is_empty() {
+                    return self.next_row().await;
+                }
+                
+                let value: serde_json::Value = serde_json::from_str(&line.trim())
+                    .map_err(|e| ClientError::ParseError(format!("Failed to parse streaming response: {}", e)))?;
+                
+                // Check if this is the end marker
+                if let serde_json::Value::Object(obj) = &value {
+                    if obj.contains_key("end") && obj["end"] == serde_json::Value::Bool(true) {
+                        self.is_done = true;
+                        return Ok(None);
+                    }
+                }
+                
+                Ok(Some(value))
+            },
+            Err(e) => Err(ClientError::IoError(e)),
+        }
+    }
+    
+    /// Collect all rows into a vector
+    pub async fn collect(&mut self) -> Result<Vec<serde_json::Value>> {
+        let mut rows = Vec::new();
+        while let Some(row) = self.next_row().await? {
+            rows.push(row);
+        }
+        Ok(rows)
+    }
 }
 
 /// A connection to a MicoDB server.
@@ -167,6 +408,8 @@ pub struct Connection {
     address: String,
     /// Connection options.
     options: ConnectionOptions,
+    /// Authentication credentials
+    auth: AuthCredentials,
 }
 
 impl Connection {
@@ -195,12 +438,54 @@ impl Connection {
         let reader = BufReader::new(read_half);
         
         Ok(Self {
-            stream: stream,
+            stream,
             reader,
             writer: write_half,
             address: address_str,
             options,
+            auth: AuthCredentials::default(),
         })
+    }
+    
+    /// Set authentication credentials for the connection
+    pub fn set_auth_credentials(&mut self, auth: AuthCredentials) {
+        self.auth = auth;
+    }
+    
+    /// Login to the server using authentication credentials
+    pub async fn login(&mut self, auth: AuthCredentials, db_name: &str) -> Result<()> {
+        let command = Request::Login {
+            db_name: db_name.to_string(),
+            auth_method: auth.auth_method.clone().unwrap_or_else(|| "password".to_string()),
+            username: auth.username.clone(),
+            password: auth.password.clone(),
+            token: auth.token.clone(),
+            api_key: auth.api_key.clone(),
+        };
+        
+        let response = self.send_command(&command).await?;
+        match response.status.as_str() {
+            "ok" => {
+                // Store authentication credentials
+                self.auth = auth;
+                
+                // Store authentication token if provided
+                if let Some(token) = response.auth_token {
+                    self.auth.auth_method = Some("jwt".to_string());
+                    self.auth.token = Some(token);
+                }
+                
+                Ok(())
+            },
+            "error" => {
+                let error_msg = match response.data {
+                    Some(serde_json::Value::String(msg)) => msg,
+                    _ => "Unknown authentication error".to_string(),
+                };
+                Err(ClientError::AuthenticationError(error_msg))
+            },
+            _ => Err(ClientError::ParseError(format!("Unknown response status: {}", response.status))),
+        }
     }
     
     /// Send a command to the server and get the response.
@@ -429,6 +714,13 @@ impl Connection {
         let command = Request::Read {
             db_name: db_name.to_string(),
             table_name: table_name.to_string(),
+            format: ResponseFormat::Json,
+            batch_size: None,
+            auth_method: self.auth.auth_method.clone(),
+            username: self.auth.username.clone(),
+            password: self.auth.password.clone(),
+            token: self.auth.token.clone(),
+            api_key: self.auth.api_key.clone(),
         };
         
         let response = self.send_command(&command).await?;
@@ -442,12 +734,169 @@ impl Connection {
         let command = Request::ExecuteSql {
             db_name: db_name.to_string(),
             query: query.to_string(),
+            format: ResponseFormat::Json,
+            batch_size: None,
+            auth_method: self.auth.auth_method.clone(),
+            username: self.auth.username.clone(),
+            password: self.auth.password.clone(),
+            token: self.auth.token.clone(),
+            api_key: self.auth.api_key.clone(),
         };
         
         let response = self.send_command(&command).await?;
         let json_data = Connection::handle_response(response)?;
         
         Self::json_to_record_batches(json_data)
+    }
+    
+    /// Read table data as a streaming response.
+    pub async fn read_table_stream(
+        &mut self, 
+        db_name: &str, 
+        table_name: &str, 
+        batch_size: Option<usize>
+    ) -> Result<StreamingResponse> {
+        // Create a new connection for streaming
+        let mut stream = TcpStream::connect(&self.address).await
+            .map_err(|e| ClientError::ConnectionError(format!("Failed to connect for streaming: {}", e)))?;
+            
+        // Apply the TCP options
+        if let Some(keepalive) = self.options.tcp_keepalive {
+            stream.set_keepalive(Some(keepalive))?;
+        }
+        stream.set_nodelay(self.options.tcp_nodelay)?;
+        
+        // Create the command
+        let command = Request::Read {
+            db_name: db_name.to_string(),
+            table_name: table_name.to_string(),
+            format: ResponseFormat::Ndjson,
+            batch_size,
+            auth_method: self.auth.auth_method.clone(),
+            username: self.auth.username.clone(),
+            password: self.auth.password.clone(),
+            token: self.auth.token.clone(),
+            api_key: self.auth.api_key.clone(),
+        };
+        
+        // Send the command
+        let json = serde_json::to_string(&command)
+            .map_err(ClientError::JsonError)?;
+        stream.write_all(json.as_bytes()).await
+            .map_err(ClientError::IoError)?;
+        stream.write_all(b"\n").await
+            .map_err(ClientError::IoError)?;
+        stream.flush().await
+            .map_err(ClientError::IoError)?;
+            
+        // Split the stream
+        let (read_half, _write_half) = stream.into_split();
+        let mut reader = BufReader::new(read_half);
+        
+        // Read the initial response with status
+        let mut line = String::new();
+        reader.read_line(&mut line).await
+            .map_err(ClientError::IoError)?;
+            
+        if line.trim().is_empty() {
+            return Err(ClientError::ParseError("Empty response from server".to_string()));
+        }
+        
+        // Parse the response
+        let response: Response = serde_json::from_str(&line.trim())
+            .map_err(|e| ClientError::ParseError(format!("Failed to parse streaming response status: {}", e)))?;
+            
+        if response.status != "ok" {
+            let error_msg = match response.data {
+                Some(serde_json::Value::String(msg)) => msg,
+                _ => "Unknown server error".to_string(),
+            };
+            return Err(ClientError::ServerError(error_msg));
+        }
+        
+        // Create the streaming response handler
+        Ok(StreamingResponse {
+            reader,
+            format: ResponseFormat::Ndjson,
+            is_done: false,
+            auth_token: response.auth_token,
+            token_expires_at: response.token_expires_at,
+        })
+    }
+    
+    /// Execute a SQL query as a streaming response.
+    pub async fn execute_sql_stream(
+        &mut self,
+        db_name: &str,
+        query: &str,
+        batch_size: Option<usize>
+    ) -> Result<StreamingResponse> {
+        // Create a new connection for streaming
+        let mut stream = TcpStream::connect(&self.address).await
+            .map_err(|e| ClientError::ConnectionError(format!("Failed to connect for streaming: {}", e)))?;
+            
+        // Apply the TCP options
+        if let Some(keepalive) = self.options.tcp_keepalive {
+            stream.set_keepalive(Some(keepalive))?;
+        }
+        stream.set_nodelay(self.options.tcp_nodelay)?;
+        
+        // Create the command
+        let command = Request::ExecuteSql {
+            db_name: db_name.to_string(),
+            query: query.to_string(),
+            format: ResponseFormat::Ndjson,
+            batch_size,
+            auth_method: self.auth.auth_method.clone(),
+            username: self.auth.username.clone(),
+            password: self.auth.password.clone(),
+            token: self.auth.token.clone(),
+            api_key: self.auth.api_key.clone(),
+        };
+        
+        // Send the command
+        let json = serde_json::to_string(&command)
+            .map_err(ClientError::JsonError)?;
+        stream.write_all(json.as_bytes()).await
+            .map_err(ClientError::IoError)?;
+        stream.write_all(b"\n").await
+            .map_err(ClientError::IoError)?;
+        stream.flush().await
+            .map_err(ClientError::IoError)?;
+            
+        // Split the stream
+        let (read_half, _write_half) = stream.into_split();
+        let mut reader = BufReader::new(read_half);
+        
+        // Read the initial response with status
+        let mut line = String::new();
+        reader.read_line(&mut line).await
+            .map_err(ClientError::IoError)?;
+            
+        if line.trim().is_empty() {
+            return Err(ClientError::ParseError("Empty response from server".to_string()));
+        }
+        
+        // Parse the response
+        let response: Response = serde_json::from_str(&line.trim())
+            .map_err(|e| ClientError::ParseError(format!("Failed to parse streaming response status: {}", e)))?;
+            
+        if response.status != "ok" {
+            let error_msg = match response.data {
+                Some(serde_json::Value::String(msg)) => msg,
+                _ => "Unknown server error".to_string(),
+            };
+            return Err(ClientError::ServerError(error_msg));
+        }
+        
+        // Create the streaming response handler
+        Ok(StreamingResponse {
+            reader,
+            format: ResponseFormat::Ndjson,
+            is_done: false,
+            auth_token: response.auth_token,
+            token_expires_at: response.token_expires_at,
+        })
     }
     
     /// Drop a table.

@@ -25,6 +25,10 @@ pub enum ClientError {
     #[error("Authentication failed: {0}")]
     AuthenticationError(String),
 
+    /// Authorization failed.
+    #[error("Authorization failed: {0}")]
+    AuthorizationError(String),
+
     /// Server returned an error.
     #[error("Server error: {0}")]
     ServerError(String),
@@ -68,6 +72,10 @@ pub enum ClientError {
     /// Feature not supported.
     #[error("Feature not supported: {0}")]
     UnsupportedFeatureError(String),
+    
+    /// Streaming error.
+    #[error("Streaming error: {0}")]
+    StreamingError(String),
     
     /// General client error.
     #[error("{0}")]
