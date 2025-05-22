@@ -33,12 +33,21 @@ Unlike traditional databases that force you to choose between real-time capabili
 - **SQL Interface**: Familiar SQL syntax for querying and manipulating data
 - **High Performance**: Written in Rust for maximum efficiency and safety
 - **Arrow-based**: Ultra-fast in-memory processing using Apache Arrow
-- **Horizontally Scalable**: Design principles that will allow scaling across multiple nodes (in development)
+- **Distributed Architecture**: Horizontal scaling with coordinator and worker nodes
 - **Multiple Data Types**: Support for Int32, String, Boolean, Float64, Date32, and TimestampNanosecond
+- **Authentication & Authorization**: Robust security with JWT tokens, API keys, and role-based access control
+- **Streaming Responses**: NDJSON streaming for efficient handling of large result sets
+- **Partitioning & Sharding**: Automatic data distribution and locality optimization
 
 ## Installation
 
-### Prerequisites
+### One-Line Installation
+
+```bash
+curl -s https://raw.githubusercontent.com/micodb/micodb/main/install.sh | bash
+```
+
+### Prerequisites for Manual Installation
 
 - Rust (1.65+)
 - Cargo (latest)
@@ -61,24 +70,62 @@ Unlike traditional databases that force you to choose between real-time capabili
    ./target/release/micodb
    ```
 
+### From Release Binaries
+
+1. Download the latest release for your platform from the [Releases page](https://github.com/micodb/micodb/releases)
+2. Extract the archive: `tar -xzf micodb-vX.Y.Z-os-arch.tar.gz`
+3. Add the binary to your PATH: `export PATH=$PATH:/path/to/micodb/bin`
+
 ### Configuration Options
 
 MicoDB can be configured using command-line options:
 
 ```bash
 # Start with a custom data directory
-./target/release/micodb --data-dir /path/to/data
+micodb --data-dir /path/to/data
 
 # Specify a different port
-./target/release/micodb --port 8080
+micodb --port 8080
 
 # Set log level
-./target/release/micodb --log-level debug
+micodb --log-level debug
+
+# Enable JWT authentication
+micodb --jwt-secret "your-secret-key"
+
+# Start in cluster mode as a coordinator
+micodb --cluster --node-type coordinator --node-config /path/to/node_config.json
+
+# Start in cluster mode as a worker
+micodb --cluster --node-type worker --node-config /path/to/worker_config.json
 ```
 
 ## Quick Start
 
 ### Connecting to MicoDB
+
+MicoDB provides multiple ways to connect:
+
+#### Using the MicoDB Client Library
+
+```rust
+use micodb::client::{Client, Result};
+
+async fn main() -> Result<()> {
+    // Connect to MicoDB
+    let client = Client::new("localhost:3456")?;
+    
+    // Create a database
+    client.create_database("mydb").await?;
+    
+    // Execute a SQL query
+    let results = client.execute_sql("mydb", "SELECT * FROM mytable").await?;
+    
+    Ok(())
+}
+```
+
+#### Using the JSON Protocol Directly
 
 MicoDB uses a simple JSON-based protocol over TCP. You can connect to it using any TCP client, such as netcat:
 
@@ -86,9 +133,47 @@ MicoDB uses a simple JSON-based protocol over TCP. You can connect to it using a
 nc localhost 3456
 ```
 
+#### Authenticating with MicoDB
+
+```rust
+// Connect and authenticate
+let mut client = Client::new("localhost:3456")?;
+
+// Using password authentication
+let auth = AuthCredentials {
+    auth_method: Some("password".to_string()),
+    username: Some("admin".to_string()),
+    password: Some("admin123".to_string()),
+    ..Default::default()
+};
+client.login(auth, "mydb").await?;
+
+// Using JWT token
+let auth = AuthCredentials {
+    auth_method: Some("jwt".to_string()),
+    token: Some("your-jwt-token".to_string()),
+    ..Default::default()
+};
+client.login(auth, "mydb").await?;
+```
+
 ### Basic Operations
 
 Here are some example commands to get started:
+
+#### Using Streaming for Large Results
+
+```rust
+// Stream results to handle large datasets efficiently
+let mut stream = client.execute_sql_stream("mydb", "SELECT * FROM large_table", Some(1000)).await?;
+
+// Process the stream row by row
+while let Some(row) = stream.next_row().await? {
+    println!("Row: {}", row);
+}
+```
+
+#### JSON Protocol Examples
 
 #### Create a Database
 ```json
@@ -192,24 +277,42 @@ MicoDB is built on a modular architecture with several core components:
 - Parquet-based columnar file storage
 - Write-ahead logging (WAL) for durability
 - Optimized for high-throughput append operations
+- Partition-based data organization
 
 ### Query Engine
 
 - SQL parser and validator
 - Query planner and optimizer
 - Vectorized execution engine based on Apache Arrow
+- Distributed query execution (in cluster mode)
 
 ### Transaction Manager
 
 - ACID transactional guarantees
 - Multi-Version Concurrency Control (MVCC)
 - Optimistic locking for concurrent operations
+- Distributed transaction coordination
 
 ### Server Component
 
 - JSON over TCP protocol
 - Connection management
 - Command processing
+- NDJSON streaming responses
+
+### Cluster Manager
+
+- Coordinator and worker node architecture
+- Metadata catalog for distributed data
+- Automatic sharding and data placement
+- Service discovery for node management
+
+### Authentication Service
+
+- Multiple authentication methods (password, JWT, API key)
+- Role-based access control (RBAC)
+- Fine-grained permissions (database, table level)
+- Token-based session management
 
 ## Use Cases
 
@@ -253,27 +356,29 @@ ACID transactions and analytical capabilities make MicoDB suitable for:
 | ACID Transactions | ✅ | Limited | Limited | ✅ |
 | Query Speed (OLAP) | Fast | Very Fast | Fast | Slow |
 | Real-time Ingestion | Fast | Moderate | Slow | Fast |
-| Horizontal Scaling | In Development | ✅ | ✅ | Varies |
-| Open Source | ✅ (AGPL) | ✅ (Apache) | ❌ | Varies |
+| Horizontal Scaling | ✅ | ✅ | ✅ | Varies |
+| Streaming Results | ✅ (NDJSON) | Limited | Limited | Limited |
+| Authentication | ✅ (Multiple) | Basic | ✅ | ✅ |
+| Open Source | ✅ (MIT) | ✅ (Apache) | ❌ | Varies |
 | Implementation | Rust | C++ | Proprietary | Varies |
 | In-memory Format | Arrow | Custom | Proprietary | Varies |
 
 ## Roadmap
 
-- **Q2 2025**
-  - Improve SQL compatibility
-  - Enhance transaction performance
-  - Implement delta log for real-time updates
-
 - **Q3 2025**
-  - Add distributed query execution
-  - Implement horizontal scaling
-  - Enhance security features (authentication, authorization)
+  - Implement Arrow Flight protocol for binary streaming
+  - Add secondary indexes for faster lookups
+  - Improve SQL compatibility with JOINs and complex aggregations
 
 - **Q4 2025**
-  - Add high-availability features
-  - Develop streaming data ingestion
-  - Create client libraries for popular languages
+  - Add high-availability features with automatic failover
+  - Implement continuous data ingestion from Kafka and other sources
+  - Create client libraries for Python, JavaScript, and Java
+
+- **Q1 2026**
+  - Add advanced query optimization for distributed workloads
+  - Implement automatic data lifecycle management
+  - Add machine learning integrations for in-database analytics
 
 ## Contributing
 

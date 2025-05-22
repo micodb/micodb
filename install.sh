@@ -154,11 +154,19 @@ install_micodb() {
     
     # Download the binary
     progress_msg "Downloading from $download_url..."
-    curl -L --progress-bar "$download_url" -o "${INSTALL_DIR}/micodb.tar.gz"
+    if ! curl -L --progress-bar "$download_url" -o "${INSTALL_DIR}/micodb.tar.gz"; then
+        error_msg "Failed to download MicoDB from $download_url"
+        error_msg "Please check your internet connection and verify that the release exists."
+        error_msg "Visit ${REPO_URL}/releases to see available releases."
+        exit 1
+    fi
     
     # Extract the archive
     progress_msg "Extracting archive..."
-    tar -xzf "${INSTALL_DIR}/micodb.tar.gz" -C "$INSTALL_DIR"
+    if ! tar -xzf "${INSTALL_DIR}/micodb.tar.gz" -C "$INSTALL_DIR"; then
+        error_msg "Failed to extract the archive."
+        exit 1
+    fi
     rm "${INSTALL_DIR}/micodb.tar.gz"
     
     # Make the binary executable
