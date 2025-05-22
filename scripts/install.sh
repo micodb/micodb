@@ -1,6 +1,6 @@
 #!/bin/bash
 # MicoDB Installer Script
-# Install with: curl -sSL https://install.micodb.org | sh
+# Install with: curl -sSL https://raw.githubusercontent.com/micodb/micodb/main/scripts/install.sh | sh
 
 set -e
 
@@ -98,6 +98,83 @@ mkdir -p "${BIN_DIR}"
 echo -e "${BLUE}Downloading MicoDB...${RESET}"
 echo "URL: ${DOWNLOAD_URL}"
 
+# Setup development environment function
+setup_dev_environment() {
+    echo -e "${BLUE}Setting up MicoDB development environment...${RESET}"
+    
+    # Check for Rust
+    if ! command -v rustc &> /dev/null; then
+        echo -e "${YELLOW}Rust not found. Installing Rust...${RESET}"
+        $DOWNLOAD_CMD https://sh.rustup.rs | sh -s -- -y
+        source $HOME/.cargo/env
+    fi
+    
+    # Clone the repository
+    REPO_DIR="${INSTALL_DIR}/repo"
+    mkdir -p "${REPO_DIR}"
+    echo -e "${BLUE}Cloning MicoDB repository...${RESET}"
+    git clone https://github.com/micodb/micodb.git "${REPO_DIR}" || {
+        echo -e "${YELLOW}Note: MicoDB repository not yet public. Creating a placeholder project.${RESET}"
+        mkdir -p "${REPO_DIR}/src/bin"
+        echo 'fn main() { println!("MicoDB (Development Version)"); }' > "${REPO_DIR}/src/bin/micodb.rs"
+        echo 'fn main() { println!("MicoDB CLI (Development Version)"); }' > "${REPO_DIR}/src/bin/micodb-cli.rs"
+        echo '[package]
+name = "micodb"
+version = "0.0.1"
+edition = "2021"' > "${REPO_DIR}/Cargo.toml"
+    }
+    
+    # Create a build.rs file to handle platform-specific flags
+    echo -e "${BLUE}Creating platform-specific build configuration...${RESET}"
+    cat > "${REPO_DIR}/build.rs" << 'EOL'
+use std::env;
+
+fn main() {
+    // Only apply macOS-specific flags when targeting macOS
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    
+    if target_os == "macos" {
+        // Apply macOS-specific flags only on macOS targets
+        println!("cargo:rustc-link-arg=-arch");
+        
+        // Get the architecture
+        let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+        if target_arch == "x86_64" {
+            println!("cargo:rustc-link-arg=x86_64");
+        } else if target_arch == "aarch64" {
+            println!("cargo:rustc-link-arg=arm64");
+        }
+        
+        println!("cargo:rustc-link-arg=-mmacosx-version-min=10.7");
+    }
+}
+EOL
+    
+    # Create a cargo config to handle dependencies
+    mkdir -p "${REPO_DIR}/.cargo"
+    cat > "${REPO_DIR}/.cargo/config.toml" << 'EOL'
+[target.'cfg(target_os = "macos")']
+rustflags = ["-C", "link-args=-arch x86_64 -arch arm64 -mmacosx-version-min=10.7"]
+
+[env]
+# Disable problematic environment variables for cross-platform builds
+CFLAGS = ""
+CXXFLAGS = ""
+EOL
+    
+    # Build MicoDB
+    echo -e "${BLUE}Building MicoDB from source...${RESET}"
+    cd "${REPO_DIR}"
+    cargo build --release
+    
+    # Create symlinks
+    mkdir -p "${BIN_DIR}"
+    ln -sf "${REPO_DIR}/target/release/micodb" "${BIN_DIR}/micodb"
+    ln -sf "${REPO_DIR}/target/release/micodb-cli" "${BIN_DIR}/micodb-cli"
+    
+    echo -e "${GREEN}MicoDB development environment set up successfully!${RESET}"
+}
+
 # Check if download URL is accessible
 if ! $DOWNLOAD_CMD "${DOWNLOAD_URL}" > /dev/null 2>&1; then
     echo -e "${RED}Error: Unable to access download URL: ${DOWNLOAD_URL}${RESET}"
@@ -167,44 +244,7 @@ else
     exit 1
 fi
 
-# Setup development environment as a fallback
-setup_dev_environment() {
-    echo -e "${BLUE}Setting up MicoDB development environment...${RESET}"
-    
-    # Check for Rust
-    if ! command -v rustc &> /dev/null; then
-        echo -e "${YELLOW}Rust not found. Installing Rust...${RESET}"
-        $DOWNLOAD_CMD https://sh.rustup.rs | sh -s -- -y
-        source $HOME/.cargo/env
-    fi
-    
-    # Clone the repository
-    REPO_DIR="${INSTALL_DIR}/repo"
-    mkdir -p "${REPO_DIR}"
-    echo -e "${BLUE}Cloning MicoDB repository...${RESET}"
-    git clone https://github.com/micodb/micodb.git "${REPO_DIR}" || {
-        echo -e "${YELLOW}Note: MicoDB repository not yet public. Creating a placeholder project.${RESET}"
-        mkdir -p "${REPO_DIR}/src/bin"
-        echo 'fn main() { println!("MicoDB (Development Version)"); }' > "${REPO_DIR}/src/bin/micodb.rs"
-        echo 'fn main() { println!("MicoDB CLI (Development Version)"); }' > "${REPO_DIR}/src/bin/micodb-cli.rs"
-        echo '[package]
-name = "micodb"
-version = "0.0.1"
-edition = "2021"' > "${REPO_DIR}/Cargo.toml"
-    }
-    
-    # Build MicoDB
-    echo -e "${BLUE}Building MicoDB from source...${RESET}"
-    cd "${REPO_DIR}"
-    cargo build --release
-    
-    # Create symlinks
-    mkdir -p "${BIN_DIR}"
-    ln -sf "${REPO_DIR}/target/release/micodb" "${BIN_DIR}/micodb"
-    ln -sf "${REPO_DIR}/target/release/micodb-cli" "${BIN_DIR}/micodb-cli"
-    
-    echo -e "${GREEN}MicoDB development environment set up successfully!${RESET}"
-}
+# This function has been moved up in the script to fix the order of definition
 
 # Display success message and usage instructions
 echo ""

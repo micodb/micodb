@@ -1,0 +1,11 @@
+[target.'cfg(target_os = "macos")']
+rustflags = ["-C", "link-args=-mmacosx-version-min=10.7"]
+
+[env]
+# Prevent passing macOS flags to non-macOS builds
+CFLAGS = { value = "", force = true }
+CXXFLAGS = { value = "", force = true }
+
+[build]
+# Ensure correct target detection
+target-dir = "target"

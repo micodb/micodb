@@ -35,6 +35,16 @@ jobs:
           toolchain: stable
           target: ${{ matrix.target }}
           override: true
+          
+      - name: Print environment info
+        run: |
+          echo "OS: $(uname -s)"
+          echo "Architecture: $(uname -m)"
+          echo "Target: ${{ matrix.target }}"
+          echo "CFLAGS: $CFLAGS"
+          echo "CXXFLAGS: $CXXFLAGS"
+          echo "Rust version: $(rustc --version)"
+          echo "Cargo version: $(cargo --version)"
 
       - name: Install cross-compilation tools
         if: matrix.os == 'linux' && matrix.arch == 'arm64'
@@ -43,11 +53,23 @@ jobs:
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
       - name: Build release binary
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --target ${{ matrix.target }}
-          use-cross: ${{ matrix.os == 'linux' && matrix.arch == 'arm64' }}
+        run: |
+          # Set environment variables to fix cross-platform build issues
+          if [[ "${{ matrix.os }}" != "macos" ]]; then
+            # Clear macOS-specific flags for non-macOS targets
+            export CFLAGS=""
+            export CXXFLAGS=""
+            export MACOSX_DEPLOYMENT_TARGET=""
+          fi
+          
+          if [[ "${{ matrix.os }}" == "linux" && "${{ matrix.arch }}" == "arm64" ]]; then
+            # Use cross for aarch64 Linux builds
+            cargo install cross
+            cross build --release --target ${{ matrix.target }}
+          else
+            # Regular build for other targets
+            cargo build --release --target ${{ matrix.target }}
+          fi
 
       - name: Prepare package
         run: |

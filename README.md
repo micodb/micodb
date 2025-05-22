@@ -44,8 +44,10 @@ Unlike traditional databases that force you to choose between real-time capabili
 ### One-Line Installation
 
 ```bash
-curl -s https://raw.githubusercontent.com/micodb/micodb/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/micodb/micodb/main/scripts/install.sh | sh
 ```
+
+This will automatically detect your OS and architecture, download the appropriate binary, and install it to `~/.micodb/bin`.
 
 ### Prerequisites for Manual Installation
 
